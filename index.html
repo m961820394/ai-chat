@@ -7,238 +7,98 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Playfair+Display:wght@500&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg:      #F8F6F2;
-      --surface:  #FFFFFF;
-      --black:    #111010;
-      --ink:      #1C1C1C;
-      --red:      #C8102E;
-      --border:   #E8E4DE;
-      --muted:    #9A9A9A;
-    }
-
+    :root { --bg: #F8F6F2; --surface: #FFFFFF; --black: #111010; --red: #C8102E; --border: #E8E4DE; --muted: #9A9A9A; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: 'DM Sans', 'Noto Serif SC', sans-serif;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    /* ── HEADER ── */
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 28px 60px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-    }
-
-    .logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.15rem;
-      font-weight: 500;
-      letter-spacing: .06em;
-      color: var(--black);
-      text-decoration: none;
-    }
+    body { background: var(--bg); font-family: 'DM Sans', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 28px 60px; border-bottom: 1px solid var(--border); background: var(--surface); }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.15rem; text-decoration: none; color: var(--black); }
     .logo span { color: var(--red); }
-
-    /* ── CHAT MAIN ── */
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 60px 24px;
-      max-width: 900px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    .chat-header {
-      text-align: center;
-      margin-bottom: 40px;
-      opacity: 0;
-      animation: rise .7s forwards;
-    }
-
-    .chat-header h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.5rem;
-      font-weight: 500;
-      color: var(--red); /* 标题设为红色 */
-    }
-
-    .chat-window {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      height: 65vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 10px 40px rgba(0,0,0,.04);
-      overflow: hidden;
-      opacity: 0;
-      animation: rise .7s .2s forwards;
-    }
-
-    #chat-box {
-      flex: 1;
-      overflow-y: auto;
-      padding: 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .msg {
-      max-width: 85%;
-      padding: 16px 24px;
-      font-size: .95rem;
-      line-height: 1.6;
-      border-radius: 18px;
-    }
-
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 60px 24px; max-width: 900px; margin: 0 auto; width: 100%; }
+    .chat-header h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--red); margin-bottom: 40px; }
+    .chat-window { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; height: 65vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.04); }
+    #chat-box { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 24px; }
+    .msg { max-width: 85%; padding: 16px 24px; font-size: .95rem; line-height: 1.6; border-radius: 18px; }
     .msg.ai { align-self: flex-start; background: var(--bg); border-bottom-left-radius: 4px; }
     .msg.user { align-self: flex-end; background: var(--black); color: #FFF; border-bottom-right-radius: 4px; }
-
-    /* ── INPUT AREA ── */
-    .input-area {
-      padding: 24px 40px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      background: var(--surface);
-    }
-
-    .upload-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--muted);
-      transition: color .3s, transform 0.2s;
-    }
-    .upload-btn:hover { color: var(--red); transform: scale(1.1); }
-
-    input[type="text"] {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 14px 20px;
-      border-radius: 999px;
-      outline: none;
-      transition: border-color .3s;
-    }
-    input[type="text"]:focus { border-color: var(--red); }
-
-    .send-btn {
-      background: var(--black);
-      color: #fff;
-      border: none;
-      border-radius: 999px;
-      padding: 12px 28px;
-      font-size: .78rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background .25s;
-    }
+    .msg img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
+    .input-area { padding: 24px 40px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 16px; background: var(--surface); }
+    .upload-btn { cursor: pointer; color: var(--muted); transition: color .3s; }
+    .upload-btn:hover { color: var(--red); }
+    input[type="text"] { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 14px 20px; border-radius: 999px; outline: none; }
+    .send-btn { background: var(--black); color: #fff; border: none; border-radius: 999px; padding: 12px 28px; font-size: .78rem; cursor: pointer; }
     .send-btn:hover { background: var(--red); }
-
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* 滚动条 */
-    #chat-box::-webkit-scrollbar { width: 4px; }
-    #chat-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
   </style>
 </head>
 <body>
-
-<header>
-  <a href="/" class="logo">MM<span>LJC</span></a>
-  <div style="font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .12em;">AI Conversation</div>
-</header>
-
+<header><a href="/" class="logo">MM<span>LJC</span></a><div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;">Vision AI</div></header>
 <main>
-  <div class="chat-header">
-    <h1>Neural <em>Assistant.</em></h1>
-  </div>
-
+  <div class="chat-header"><h1>Neural <em>Assistant.</em></h1></div>
   <div class="chat-window">
-    <div id="chat-box">
-      <div class="msg ai">您好。智谱 GLM 助手已就绪，正在通过 NVIDIA 加速网络为您提供服务。</div>
-    </div>
-
+    <div id="chat-box"><div class="msg ai">GLM-Vision 已就绪。请上传图片并描述您的需求。</div></div>
     <div class="input-area">
       <label class="upload-btn">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        <input type="file" style="display:none" onchange="handleFile(this)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="previewImage(this)">
       </label>
-
-      <input type="text" id="userInput" placeholder="Ask me anything..." onkeypress="if(event.keyCode==13) sendMessage()">
+      <input type="text" id="userInput" placeholder="描述图片或发送文字..." onkeypress="if(event.keyCode==13) sendMessage()">
       <button class="send-btn" onclick="sendMessage()">SEND</button>
     </div>
   </div>
 </main>
 
 <script>
-  // 确认这是你的 Worker 地址
   const WORKER_URL = 'https://nvidia-bot-proxy.m961820394.workers.dev/';
+  let currentImageData = null;
+
+  function previewImage(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        currentImageData = e.target.result;
+        appendMessage('user', '已选择图片，请发送文字描述。', currentImageData);
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
 
   async function sendMessage() {
     const input = document.getElementById('userInput');
-    const text = input.value.trim();
-    if (!text) return;
+    const text = input.value.trim() || (currentImageData ? "这张图里有什么？" : "");
+    if (!text && !currentImageData) return;
 
-    appendMessage('user', text);
+    if (!currentImageData) appendMessage('user', text);
     input.value = '';
 
     try {
       const response = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [{ role: "user", content: text }] })
+        body: JSON.stringify({ 
+          messages: [{ role: "user", content: text }],
+          imageData: currentImageData 
+        })
       });
-
       const data = await response.json();
-      if (data.error) {
-        appendMessage('ai', "⚠️ " + data.error);
-      } else {
-        appendMessage('ai', data.choices[0].message.content);
-      }
+      currentImageData = null; // 发送后清除图片缓存
+      appendMessage('ai', data.error ? "⚠️ " + data.error : data.choices[0].message.content);
     } catch (e) {
-      appendMessage('ai', "❌ 无法连接到神经网络，请稍后重试。");
+      appendMessage('ai', "❌ 连接失败。");
     }
   }
 
-  function handleFile(input) {
-    if (input.files && input.files[0]) {
-      appendMessage('ai', `已选择文件: ${input.files[0].name}。目前仅支持文字交流，多模态解析正在开发中。`);
-    }
-  }
-
-  function appendMessage(role, text) {
+  function appendMessage(role, text, imgData = null) {
     const chatBox = document.getElementById('chat-box');
     const div = document.createElement('div');
     div.className = `msg ${role}`;
     div.innerText = text;
+    if (imgData) {
+      const img = document.createElement('img');
+      img.src = imgData;
+      div.appendChild(img);
+    }
     chatBox.appendChild(div);
-    chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+    chatBox.scrollTop = chatBox.scrollHeight;
   }
 </script>
-
 </body>
 </html>
