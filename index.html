@@ -1,1 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Assistant — MMLJC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Playfair+Display:wght@500&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #F8F6F2;
+      --surface:  #FFFFFF;
+      --black:    #111010;
+      --ink:      #1C1C1C;
+      --red:      #C8102E;
+      --red-soft: #F5E6E9;
+      --muted:    #9A9A9A;
+      --border:   #E8E4DE;
+    }
 
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'DM Sans', 'Noto Serif SC', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 60px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 500;
+      letter-spacing: .06em;
+      color: var(--black);
+      text-decoration: none;
+    }
+    .logo span { color: var(--red); }
+
+    .nav-tag {
+      font-size: .72rem;
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    /* ── CHAT MAIN ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .chat-header {
+      text-align: center;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: rise .7s forwards;
+    }
+
+    .chat-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 500;
+      color: var(--black);
+    }
+
+    /* 聊天容器 */
+    .chat-window {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      height: 65vh;
+      box-shadow: 0 10px 40px rgba(0,0,0,.04);
+      overflow: hidden;
+      opacity: 0;
+      animation: rise .7s .2s forwards;
+    }
+
+    #chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* 消息气泡 */
+    .msg {
+      max-width: 80%;
+      padding: 16px 24px;
+      font-size: .95rem;
+      line-height: 1.6;
+      border-radius: 18px;
+      position: relative;
+    }
+
+    .msg.ai {
+      align-self: flex-start;
+      background: var(--bg);
+      color: var(--ink);
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      background: var(--black);
+      color: #FFF;
+      border-bottom-right-radius: 4px;
+    }
+
+    /* 输入区域 */
+    .input-area {
+      padding: 24px 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 16px;
+      background: var(--surface);
+    }
+
+    input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 14px 20px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: .9rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .3s;
+    }
+
+    input:focus {
+      border-color: var(--red);
+    }
+
+    .send-btn {
+      background: var(--black);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 0 28px;
+      font-size: .78rem;
+      font-weight: 500;
+      letter-spacing: .06em;
+      cursor: pointer;
+      transition: background .25s;
+    }
+
+    .send-btn:hover {
+      background: var(--red);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 40px 60px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: .75rem;
+      color: var(--muted);
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 滚动条美化 */
+    #chat-box::-webkit-scrollbar { width: 4px; }
+    #chat-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    @media (max-width: 600px) {
+      header, footer { padding: 20px; }
+      .chat-window { height: 75vh; }
+      #chat-box { padding: 20px; }
+      .input-area { padding: 15px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo">MM<span>LJC</span></a>
+  <div class="nav-tag">AI Conversation</div>
+</header>
+
+<main>
+  <div class="chat-header">
+    <h1>Neural <em>Assistant.</em></h1>
+  </div>
+
+  <div class="chat-window">
+    <div id="chat-box">
+      <div class="msg ai">您好，我是为您定制的 AI 助手。有什么我可以帮您的吗？</div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Ask me anything..." onkeypress="if(event.keyCode==13) sendMessage()">
+      <button class="send-btn" onclick="sendMessage()">SEND</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div>© 2026 MMLJC.COM</div>
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <div style="width: 7px; height: 7px; border-radius: 50%; background: #22C55E;"></div>
+    NVIDIA API ONLINE
+  </div>
+</footer>
+
+<script>
+  // 请确保这里的 URL 与你之前部署的 Cloudflare Worker 一致
+  const WORKER_URL = 'https://nvidia-bot-proxy.m961820394.workers.dev/';
+
+  async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const chatBox = document.getElementById('chat-box');
+    const text = input.value.trim();
+    
+    if (!text) return;
+
+    // 用户消息排版
+    appendMessage('user', text);
+    input.value = '';
+
+    try {
+      const response = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: "user", content: text }]
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.choices && data.choices[0]) {
+        const reply = data.choices[0].message.content;
+        appendMessage('ai', reply);
+      } else {
+        throw new Error('Invalid response');
+      }
+    } catch (e) {
+      appendMessage('ai', "抱歉，连接到神经网络时出现错误。请检查 API 配置。");
+    }
+  }
+
+  function appendMessage(role, text) {
+    const chatBox = document.getElementById('chat-box');
+    const div = document.createElement('div');
+    div.className = `msg ${role}`;
+    div.innerText = text;
+    chatBox.appendChild(div);
+    
+    // 自动滚动到底部
+    chatBox.scrollTo({
+      top: chatBox.scrollHeight,
+      behavior: 'smooth'
+    });
+  }
+</script>
+
+</body>
+</html>
