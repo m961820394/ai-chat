@@ -80,10 +80,9 @@
       font-family: 'Playfair Display', serif;
       font-size: 2.5rem;
       font-weight: 500;
-      color: var(--black);
+      color: var(--red); /* 标题改为红色 */
     }
 
-    /* 聊天容器 */
     .chat-window {
       width: 100%;
       background: var(--surface);
@@ -107,40 +106,39 @@
       gap: 24px;
     }
 
-    /* 消息气泡 */
     .msg {
       max-width: 80%;
       padding: 16px 24px;
       font-size: .95rem;
       line-height: 1.6;
       border-radius: 18px;
-      position: relative;
     }
 
-    .msg.ai {
-      align-self: flex-start;
-      background: var(--bg);
-      color: var(--ink);
-      border-bottom-left-radius: 4px;
-    }
+    .msg.ai { align-self: flex-start; background: var(--bg); border-bottom-left-radius: 4px; }
+    .msg.user { align-self: flex-end; background: var(--black); color: #FFF; border-bottom-right-radius: 4px; }
 
-    .msg.user {
-      align-self: flex-end;
-      background: var(--black);
-      color: #FFF;
-      border-bottom-right-radius: 4px;
-    }
-
-    /* 输入区域 */
+    /* ── INPUT AREA ── */
     .input-area {
       padding: 24px 40px;
       border-top: 1px solid var(--border);
       display: flex;
+      align-items: center;
       gap: 16px;
       background: var(--surface);
     }
 
-    input {
+    /* 精致的上传按钮 */
+    .upload-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+      transition: color .3s, transform 0.2s;
+    }
+    .upload-btn:hover { color: var(--red); transform: scale(1.1); }
+
+    input[type="text"] {
       flex: 1;
       background: var(--bg);
       border: 1px solid var(--border);
@@ -148,58 +146,28 @@
       border-radius: 999px;
       font-family: inherit;
       font-size: .9rem;
-      color: var(--ink);
       outline: none;
       transition: border-color .3s;
     }
-
-    input:focus {
-      border-color: var(--red);
-    }
+    input[type="text"]:focus { border-color: var(--red); }
 
     .send-btn {
       background: var(--black);
       color: #fff;
       border: none;
       border-radius: 999px;
-      padding: 0 28px;
+      padding: 12px 28px;
       font-size: .78rem;
       font-weight: 500;
       letter-spacing: .06em;
       cursor: pointer;
       transition: background .25s;
     }
+    .send-btn:hover { background: var(--red); }
 
-    .send-btn:hover {
-      background: var(--red);
-    }
+    footer { padding: 40px 60px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: .75rem; color: var(--muted); }
 
-    /* ── FOOTER ── */
-    footer {
-      padding: 40px 60px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: .75rem;
-      color: var(--muted);
-    }
-
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* 滚动条美化 */
-    #chat-box::-webkit-scrollbar { width: 4px; }
-    #chat-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-
-    @media (max-width: 600px) {
-      header, footer { padding: 20px; }
-      .chat-window { height: 75vh; }
-      #chat-box { padding: 20px; }
-      .input-area { padding: 15px 20px; }
-    }
+    @keyframes rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
@@ -216,10 +184,18 @@
 
   <div class="chat-window">
     <div id="chat-box">
-      <div class="msg ai">您好，我是为您定制的 AI 助手。有什么我可以帮您的吗？</div>
+      <div class="msg ai">您好。我是智谱 GLM-4 助手，已接入 NVIDIA 加速网络。请问有什么可以帮您？</div>
     </div>
 
     <div class="input-area">
+      <label for="fileUpload" class="upload-btn">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <input type="file" id="fileUpload" style="display:none" onchange="handleUpload(this)">
+      </label>
+
       <input type="text" id="userInput" placeholder="Ask me anything..." onkeypress="if(event.keyCode==13) sendMessage()">
       <button class="send-btn" onclick="sendMessage()">SEND</button>
     </div>
@@ -230,22 +206,20 @@
   <div>© 2026 MMLJC.COM</div>
   <div style="display: flex; align-items: center; gap: 8px;">
     <div style="width: 7px; height: 7px; border-radius: 50%; background: #22C55E;"></div>
-    NVIDIA API ONLINE
+    GLM-4 & NVIDIA NIM ONLINE
   </div>
 </footer>
 
 <script>
-  // 请确保这里的 URL 与你之前部署的 Cloudflare Worker 一致
+  // 请确保这里的 URL 是你部署的 Worker 地址
   const WORKER_URL = 'https://nvidia-bot-proxy.m961820394.workers.dev/';
 
   async function sendMessage() {
     const input = document.getElementById('userInput');
     const chatBox = document.getElementById('chat-box');
     const text = input.value.trim();
-    
     if (!text) return;
 
-    // 用户消息排版
     appendMessage('user', text);
     input.value = '';
 
@@ -257,17 +231,18 @@
           messages: [{ role: "user", content: text }]
         })
       });
-      
       const data = await response.json();
-      
-      if (data.choices && data.choices[0]) {
-        const reply = data.choices[0].message.content;
-        appendMessage('ai', reply);
-      } else {
-        throw new Error('Invalid response');
-      }
+      const reply = data.choices[0].message.content;
+      appendMessage('ai', reply);
     } catch (e) {
-      appendMessage('ai', "抱歉，连接到神经网络时出现错误。请检查 API 配置。");
+      appendMessage('ai', "连接中断。请检查 API 密钥配置。");
+    }
+  }
+
+  function handleUpload(input) {
+    if (input.files && input.files[0]) {
+      const fileName = input.files[0].name;
+      appendMessage('ai', `已选择文件: ${fileName}。多模态解析功能正在接入中...`);
     }
   }
 
@@ -277,12 +252,7 @@
     div.className = `msg ${role}`;
     div.innerText = text;
     chatBox.appendChild(div);
-    
-    // 自动滚动到底部
-    chatBox.scrollTo({
-      top: chatBox.scrollHeight,
-      behavior: 'smooth'
-    });
+    chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
   }
 </script>
 
