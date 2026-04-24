@@ -7,97 +7,196 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Playfair+Display:wght@500&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet">
   <style>
-    :root { --bg: #F8F6F2; --surface: #FFFFFF; --black: #111010; --red: #C8102E; --border: #E8E4DE; --muted: #9A9A9A; }
+    :root {
+      --bg: #F8F6F2; --surface: #FFFFFF; --black: #111010; --ink: #1C1C1C;
+      --red: #C8102E; --border: #E8E4DE; --muted: #9A9A9A;
+    }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); font-family: 'DM Sans', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+    body { background: var(--bg); color: var(--ink); font-family: 'DM Sans', 'Noto Serif SC', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
     header { display: flex; align-items: center; justify-content: space-between; padding: 28px 60px; border-bottom: 1px solid var(--border); background: var(--surface); }
-    .logo { font-family: 'Playfair Display', serif; font-size: 1.15rem; text-decoration: none; color: var(--black); }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 500; text-decoration: none; color: var(--black); }
     .logo span { color: var(--red); }
     main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 60px 24px; max-width: 900px; margin: 0 auto; width: 100%; }
-    .chat-header h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--red); margin-bottom: 40px; }
-    .chat-window { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; height: 65vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.04); }
+    .chat-header h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 500; color: var(--red); margin-bottom: 40px; }
+    .chat-window { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; height: 65vh; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,.04); overflow: hidden; }
     #chat-box { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 24px; }
     .msg { max-width: 85%; padding: 16px 24px; font-size: .95rem; line-height: 1.6; border-radius: 18px; }
     .msg.ai { align-self: flex-start; background: var(--bg); border-bottom-left-radius: 4px; }
     .msg.user { align-self: flex-end; background: var(--black); color: #FFF; border-bottom-right-radius: 4px; }
-    .msg img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
+    .msg img { max-width: 200px; border-radius: 10px; display: block; margin-top: 8px; }
+
+    /* 图片预览区域 */
+    #image-preview-bar {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 40px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      font-size: .78rem;
+      color: var(--muted);
+    }
+    #image-preview-bar img { height: 44px; width: 44px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+    #clear-image { cursor: pointer; color: var(--red); font-size: .85rem; margin-left: auto; }
+
     .input-area { padding: 24px 40px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 16px; background: var(--surface); }
-    .upload-btn { cursor: pointer; color: var(--muted); transition: color .3s; }
+    .upload-btn { cursor: pointer; color: var(--muted); transition: color .3s; display: flex; }
     .upload-btn:hover { color: var(--red); }
-    input[type="text"] { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 14px 20px; border-radius: 999px; outline: none; }
-    .send-btn { background: var(--black); color: #fff; border: none; border-radius: 999px; padding: 12px 28px; font-size: .78rem; cursor: pointer; }
+    /* 选了图片后图标变红 */
+    .upload-btn.has-image { color: var(--red); }
+    input[type="text"] { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 14px 20px; border-radius: 999px; outline: none; transition: border-color .3s; }
+    input[type="text"]:focus { border-color: var(--red); }
+    .send-btn { background: var(--black); color: #fff; border: none; border-radius: 999px; padding: 12px 28px; font-size: .78rem; font-weight: 500; cursor: pointer; transition: background .25s; }
     .send-btn:hover { background: var(--red); }
+    .send-btn:disabled { background: var(--muted); cursor: not-allowed; }
   </style>
 </head>
 <body>
-<header><a href="/" class="logo">MM<span>LJC</span></a><div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;">Vision AI</div></header>
+<header>
+  <a href="/" class="logo">MM<span>LJC</span></a>
+  <div style="font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .12em;">AI Conversation</div>
+</header>
 <main>
   <div class="chat-header"><h1>Neural <em>Assistant.</em></h1></div>
   <div class="chat-window">
-    <div id="chat-box"><div class="msg ai">GLM-Vision 已就绪。请上传图片并描述您的需求。</div></div>
+    <div id="chat-box">
+      <div class="msg ai">系统已就绪。智谱 GLM-5.1 正在加速连接...（上传图片后自动切换至视觉模型）</div>
+    </div>
+
+    <!-- 图片预览条（选图后出现） -->
+    <div id="image-preview-bar">
+      <img id="preview-thumb" src="" alt="预览">
+      <span id="preview-name"></span>
+      <span id="clear-image" onclick="clearImage()">✕ 移除</span>
+    </div>
+
     <div class="input-area">
-      <label class="upload-btn">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="previewImage(this)">
+      <label class="upload-btn" id="upload-label" title="上传图片">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="3"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
       </label>
-      <input type="text" id="userInput" placeholder="描述图片或发送文字..." onkeypress="if(event.keyCode==13) sendMessage()">
-      <button class="send-btn" onclick="sendMessage()">SEND</button>
+      <input type="text" id="userInput" placeholder="Ask me anything..." onkeypress="if(event.keyCode==13) sendMessage()">
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">SEND</button>
     </div>
   </div>
 </main>
 
 <script>
   const WORKER_URL = 'https://nvidia-bot-proxy.m961820394.workers.dev/';
-  let currentImageData = null;
 
-  function previewImage(input) {
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        currentImageData = e.target.result;
-        appendMessage('user', '已选择图片，请发送文字描述。', currentImageData);
-      };
-      reader.readAsDataURL(input.files[0]);
+  let chatHistory = [];   // 保存对话历史
+  let pendingImage = null; // 当前待发送的图片（base64 data URI）
+
+  // ── 图片选择处理 ──────────────────────────────
+  function handleImageSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // 限制大小：3MB 以内（base64 后约 4MB，在 NVIDIA 限制内）
+    if (file.size > 3 * 1024 * 1024) {
+      alert('图片请不要超过 3MB，否则 AI 接口可能拒绝处理。');
+      event.target.value = '';
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      pendingImage = e.target.result; // "data:image/jpeg;base64,..."
+
+      // 显示预览条
+      document.getElementById('preview-thumb').src = pendingImage;
+      document.getElementById('preview-name').textContent = file.name;
+      document.getElementById('image-preview-bar').style.display = 'flex';
+      document.getElementById('upload-label').classList.add('has-image');
+    };
+    reader.readAsDataURL(file);
   }
 
+  function clearImage() {
+    pendingImage = null;
+    document.getElementById('imageInput').value = '';
+    document.getElementById('image-preview-bar').style.display = 'none';
+    document.getElementById('upload-label').classList.remove('has-image');
+  }
+
+  // ── 发送消息 ──────────────────────────────────
   async function sendMessage() {
     const input = document.getElementById('userInput');
-    const text = input.value.trim() || (currentImageData ? "这张图里有什么？" : "");
-    if (!text && !currentImageData) return;
+    const text = input.value.trim();
+    if (!text && !pendingImage) return;
 
-    if (!currentImageData) appendMessage('user', text);
+    const sendBtn = document.getElementById('sendBtn');
+    sendBtn.disabled = true;
+    sendBtn.textContent = '...';
+
+    // 显示用户消息（含图片预览）
+    appendUserMessage(text, pendingImage);
     input.value = '';
+
+    // 构造发给 Worker 的 body
+    const userContent = text || '请描述这张图片';
+    chatHistory.push({ role: "user", content: userContent });
+
+    const requestBody = {
+      messages: chatHistory,
+    };
+    if (pendingImage) {
+      requestBody.image = pendingImage; // Worker 会据此切换模型
+    }
+
+    const imageToSend = pendingImage;
+    clearImage(); // 发送后立刻清除预览
 
     try {
       const response = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          messages: [{ role: "user", content: text }],
-          imageData: currentImageData 
-        })
+        body: JSON.stringify(requestBody),
       });
+
       const data = await response.json();
-      currentImageData = null; // 发送后清除图片缓存
-      appendMessage('ai', data.error ? "⚠️ " + data.error : data.choices[0].message.content);
+
+      if (data.error) {
+        appendMessage('ai', '⚠ ' + data.error);
+      } else {
+        const reply = data.choices[0].message.content;
+        chatHistory.push({ role: "assistant", content: reply });
+        appendMessage('ai', reply);
+      }
     } catch (e) {
-      appendMessage('ai', "❌ 连接失败。");
+      appendMessage('ai', '网络异常：无法连接到 Worker。请检查 WORKER_URL 是否正确。');
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'SEND';
     }
   }
 
-  function appendMessage(role, text, imgData = null) {
+  // ── 渲染消息 ──────────────────────────────────
+  function appendUserMessage(text, imageDataUrl) {
+    const chatBox = document.getElementById('chat-box');
+    const div = document.createElement('div');
+    div.className = 'msg user';
+    if (text) div.appendChild(document.createTextNode(text));
+    if (imageDataUrl) {
+      const img = document.createElement('img');
+      img.src = imageDataUrl;
+      div.appendChild(img);
+    }
+    chatBox.appendChild(div);
+    chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+  }
+
+  function appendMessage(role, text) {
     const chatBox = document.getElementById('chat-box');
     const div = document.createElement('div');
     div.className = `msg ${role}`;
     div.innerText = text;
-    if (imgData) {
-      const img = document.createElement('img');
-      img.src = imgData;
-      div.appendChild(img);
-    }
     chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
   }
 </script>
 </body>
