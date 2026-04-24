@@ -239,7 +239,7 @@
       chatHistory.push({ role: "assistant", content: fullReply });
 
     } catch (e) {
-      aiDiv.innerText = '网络异常：无法连接到 Worker。';
+      aiDiv.innerText = '错误：' + e.message;
     } finally {
       sendBtn.disabled = false;
       sendBtn.textContent = 'SEND';
