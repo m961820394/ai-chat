@@ -193,76 +193,84 @@
   }
 
   // ── 发送消息 ──────────────────────────────────
-  async function sendMessage() {
-    const input = document.getElementById('userInput');
-    const text = input.value.trim();
-    if (!text && !pendingImage) return;
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text && !pendingImage) return;
 
-    const sendBtn = document.getElementById('sendBtn');
-    sendBtn.disabled = true;
-    sendBtn.textContent = '...';
+  const sendBtn = document.getElementById('sendBtn');
+  sendBtn.disabled = true;
+  sendBtn.textContent = '...';
 
-    appendUserMessage(text, pendingImage);
-    input.value = '';
+  appendUserMessage(text, pendingImage);
+  input.value = '';
 
-    const userContent = text || '请描述这张图片';
-    chatHistory.push({ role: "user", content: userContent });
+  const userContent = text || '请描述这张图片';
+  chatHistory.push({ role: "user", content: userContent });
 
-    const requestBody = {
-      messages: chatHistory,
-      model: selectedModel,
-    };
-    if (pendingImage) requestBody.image = pendingImage;
+  const requestBody = { messages: chatHistory, model: selectedModel };
+  if (pendingImage) requestBody.image = pendingImage;
+  clearImage();
 
-    clearImage();
+  // 先创建一个空的 AI 气泡
+  const aiDiv = createAiBubble();
 
-    try {
-      const response = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
+  try {
+    const response = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+    });
 
-      const data = await response.json();
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullReply = '';
 
-      if (data.error) {
-        appendMessage('ai', '⚠ ' + data.error);
-      } else {
-        const reply = data.choices[0].message.content;
-        chatHistory.push({ role: "assistant", content: reply });
-        appendMessage('ai', reply);
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
+
+      for (const line of lines) {
+        const jsonStr = line.slice(6).trim();
+        if (jsonStr === '[DONE]') break;
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const delta = parsed.choices?.[0]?.delta?.content;
+          if (delta) {
+            fullReply += delta;
+            aiDiv.innerText = fullReply; // 逐字更新气泡
+            document.getElementById('chat-box').scrollTo({ 
+              top: document.getElementById('chat-box').scrollHeight, 
+              behavior: 'smooth' 
+            });
+          }
+        } catch {}
       }
-    } catch (e) {
-      appendMessage('ai', '网络异常：无法连接到 Worker。');
-    } finally {
-      sendBtn.disabled = false;
-      sendBtn.textContent = 'SEND';
     }
-  }
 
-  // ── 渲染 ──────────────────────────────────────
-  function appendUserMessage(text, imageDataUrl) {
-    const chatBox = document.getElementById('chat-box');
-    const div = document.createElement('div');
-    div.className = 'msg user';
-    if (text) div.appendChild(document.createTextNode(text));
-    if (imageDataUrl) {
-      const img = document.createElement('img');
-      img.src = imageDataUrl;
-      div.appendChild(img);
-    }
-    chatBox.appendChild(div);
-    chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
-  }
+    chatHistory.push({ role: "assistant", content: fullReply });
 
-  function appendMessage(role, text) {
-    const chatBox = document.getElementById('chat-box');
-    const div = document.createElement('div');
-    div.className = `msg ${role}`;
-    div.innerText = text;
-    chatBox.appendChild(div);
-    chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+  } catch (e) {
+    aiDiv.innerText = '网络异常：无法连接到 Worker。';
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'SEND';
   }
+}
+
+// 新增：创建空气泡并返回引用
+function createAiBubble() {
+  const chatBox = document.getElementById('chat-box');
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  div.innerText = '▍'; // 光标占位
+  chatBox.appendChild(div);
+  chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+  return div;
+}
 </script>
 </body>
 </html>
