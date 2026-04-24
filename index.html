@@ -13,17 +13,32 @@
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); color: var(--ink); font-family: 'DM Sans', 'Noto Serif SC', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+    
+    /* ── HEADER ── */
     header { display: flex; align-items: center; justify-content: space-between; padding: 28px 60px; border-bottom: 1px solid var(--border); background: var(--surface); }
     .logo { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 500; text-decoration: none; color: var(--black); }
     .logo span { color: var(--red); }
+    
+    .header-nav { display: flex; align-items: center; gap: 32px; }
+    .nav-link { font-size: .72rem; font-weight: 500; color: var(--black); text-decoration: none; letter-spacing: .12em; transition: color .3s; }
+    .nav-link:hover { color: var(--red); }
+    .nav-tag { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; }
+
     main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 60px 24px; max-width: 900px; margin: 0 auto; width: 100%; }
     .chat-header h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 500; color: var(--red); margin-bottom: 40px; }
-    .chat-window { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; height: 65vh; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,.04); overflow: hidden; }
-    #chat-box { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 24px; }
-    .msg { max-width: 85%; padding: 16px 24px; font-size: .95rem; line-height: 1.6; border-radius: 18px; }
-    .msg.ai { align-self: flex-start; background: var(--bg); border-bottom-left-radius: 4px; }
-    .msg.user { align-self: flex-end; background: var(--black); color: #FFF; border-bottom-right-radius: 4px; }
-    .msg img { max-width: 200px; border-radius: 10px; display: block; margin-top: 8px; }
+    
+    /* ── CHAT WINDOW (修改点：边框变红) ── */
+    .chat-window { 
+      width: 100%; 
+      background: var(--surface); 
+      border: 1px solid var(--red); /* 边框变红 */
+      border-radius: 24px; 
+      height: 65vh; 
+      display: flex; 
+      flex-direction: column; 
+      box-shadow: 0 10px 40px rgba(200, 16, 46, .08); /* 增加微弱红色投影 */
+      overflow: hidden; 
+    }
 
     #model-bar {
       display: flex; align-items: center; gap: 8px;
@@ -37,6 +52,12 @@
     #vision-badge { display: none; margin-left: auto; font-size: .7rem; color: var(--red); align-items: center; gap: 4px; }
     #vision-badge.show { display: flex; }
 
+    #chat-box { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 24px; }
+    .msg { max-width: 85%; padding: 16px 24px; font-size: .95rem; line-height: 1.6; border-radius: 18px; }
+    .msg.ai { align-self: flex-start; background: var(--bg); border-bottom-left-radius: 4px; }
+    .msg.user { align-self: flex-end; background: var(--black); color: #FFF; border-bottom-right-radius: 4px; }
+    .msg img { max-width: 200px; border-radius: 10px; display: block; margin-top: 8px; }
+
     #image-preview-bar { display: none; align-items: center; gap: 12px; padding: 10px 40px; border-top: 1px solid var(--border); background: var(--bg); font-size: .78rem; color: var(--muted); }
     #image-preview-bar img { height: 44px; width: 44px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
     #clear-image { cursor: pointer; color: var(--red); font-size: .85rem; margin-left: auto; }
@@ -47,15 +68,31 @@
     .upload-btn.has-image { color: var(--red); }
     input[type="text"] { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 14px 20px; border-radius: 999px; outline: none; transition: border-color .3s; min-width: 0; }
     input[type="text"]:focus { border-color: var(--red); }
-    .send-btn { background: var(--black); color: #fff; border: none; border-radius: 999px; padding: 12px 28px; font-size: .78rem; font-weight: 500; cursor: pointer; transition: background .25s; flex-shrink: 0; }
-    .send-btn:hover { background: var(--red); }
+
+    /* ── SEND BUTTON (修改点：背景变红) ── */
+    .send-btn { 
+      background: var(--red); /* 背景变红 */
+      color: #fff; 
+      border: none; 
+      border-radius: 999px; 
+      padding: 12px 28px; 
+      font-size: .78rem; 
+      font-weight: 500; 
+      cursor: pointer; 
+      transition: opacity .25s; 
+      flex-shrink: 0; 
+    }
+    .send-btn:hover { opacity: 0.85; }
     .send-btn:disabled { background: var(--muted); cursor: not-allowed; }
   </style>
 </head>
 <body>
 <header>
   <a href="/" class="logo">MM<span>LJC</span></a>
-  <div style="font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .12em;">AI Conversation</div>
+  <div class="header-nav">
+    <a href="https://mmljc.com" class="nav-link">HOME</a>
+    <div class="nav-tag">AI Conversation</div>
+  </div>
 </header>
 <main>
   <div class="chat-header"><h1>Neural <em>Assistant.</em></h1></div>
