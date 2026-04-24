@@ -1,146 +1,3 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Assistant — MMLJC</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Playfair+Display:wght@500&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #F8F6F2; --surface: #FFFFFF; --black: #111010; --ink: #1C1C1C;
-      --red: #C8102E; --border: #E8E4DE; --muted: #9A9A9A;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--ink); font-family: 'DM Sans', 'Noto Serif SC', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
-    header { display: flex; align-items: center; justify-content: space-between; padding: 28px 60px; border-bottom: 1px solid var(--border); background: var(--surface); }
-    .logo { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 500; text-decoration: none; color: var(--black); }
-    .logo span { color: var(--red); }
-    main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 60px 24px; max-width: 900px; margin: 0 auto; width: 100%; }
-    .chat-header h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 500; color: var(--red); margin-bottom: 40px; }
-    .chat-window { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; height: 65vh; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,.04); overflow: hidden; }
-    #chat-box { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 24px; }
-    .msg { max-width: 85%; padding: 16px 24px; font-size: .95rem; line-height: 1.6; border-radius: 18px; }
-    .msg.ai { align-self: flex-start; background: var(--bg); border-bottom-left-radius: 4px; }
-    .msg.user { align-self: flex-end; background: var(--black); color: #FFF; border-bottom-right-radius: 4px; }
-    .msg img { max-width: 200px; border-radius: 10px; display: block; margin-top: 8px; }
-
-    /* 模型选择器栏 */
-    #model-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 40px;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg);
-      flex-wrap: wrap;
-    }
-    #model-bar span {
-      font-size: .7rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      white-space: nowrap;
-    }
-    .model-chip {
-      padding: 5px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      font-size: .72rem;
-      cursor: pointer;
-      transition: all .2s;
-      white-space: nowrap;
-      color: var(--ink);
-    }
-    .model-chip:hover { border-color: var(--black); }
-    .model-chip.active { background: var(--black); color: #fff; border-color: var(--black); }
-    .model-chip.vision-active { background: var(--red); color: #fff; border-color: var(--red); }
-    #vision-badge {
-      display: none;
-      margin-left: auto;
-      font-size: .7rem;
-      color: var(--red);
-      align-items: center;
-      gap: 4px;
-    }
-    #vision-badge.show { display: flex; }
-
-    /* 图片预览条 */
-    #image-preview-bar {
-      display: none;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 40px;
-      border-top: 1px solid var(--border);
-      background: var(--bg);
-      font-size: .78rem;
-      color: var(--muted);
-    }
-    #image-preview-bar img { height: 44px; width: 44px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
-    #clear-image { cursor: pointer; color: var(--red); font-size: .85rem; margin-left: auto; }
-
-    .input-area { padding: 24px 40px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 16px; background: var(--surface); }
-    .upload-btn { cursor: pointer; color: var(--muted); transition: color .3s; display: flex; flex-shrink: 0; }
-    .upload-btn:hover { color: var(--red); }
-    .upload-btn.has-image { color: var(--red); }
-    input[type="text"] { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 14px 20px; border-radius: 999px; outline: none; transition: border-color .3s; min-width: 0; }
-    input[type="text"]:focus { border-color: var(--red); }
-    .send-btn { background: var(--black); color: #fff; border: none; border-radius: 999px; padding: 12px 28px; font-size: .78rem; font-weight: 500; cursor: pointer; transition: background .25s; flex-shrink: 0; }
-    .send-btn:hover { background: var(--red); }
-    .send-btn:disabled { background: var(--muted); cursor: not-allowed; }
-  </style>
-</head>
-<body>
-<header>
-  <a href="/" class="logo">MM<span>LJC</span></a>
-  <div style="font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .12em;">AI Conversation</div>
-</header>
-<main>
-  <div class="chat-header"><h1>Neural <em>Assistant.</em></h1></div>
-  <div class="chat-window">
-
-    <!-- 模型选择器 -->
-    <div id="model-bar">
-      <span>Model</span>
-      <button class="model-chip active" onclick="selectModel(this, 'z-ai/glm-5.1')">GLM-5.1</button>
-      <button class="model-chip" onclick="selectModel(this, 'deepseek-ai/deepseek-v3.2')">DeepSeek V3</button>
-      <button class="model-chip" onclick="selectModel(this, 'moonshotai/kimi-k2-instruct')">Kimi K2</button>
-      <button class="model-chip" onclick="selectModel(this, 'meta/llama-4-maverick-17b-128e-instruct')">Llama 4</button>
-      <button class="model-chip" onclick="selectModel(this, 'meta/llama-3.3-70b-instruct')">Llama 3.3</button>
-      <button class="model-chip" onclick="selectModel(this, 'mistralai/mistral-large-2-instruct')">Mistral Large</button>
-      <div id="vision-badge">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        Vision 模式（Llama 3.2）
-      </div>
-    </div>
-
-    <div id="chat-box">
-      <div class="msg ai">系统已就绪，当前模型：<strong>GLM-5.1</strong>。上传图片后自动切换视觉模型。</div>
-    </div>
-
-    <!-- 图片预览条 -->
-    <div id="image-preview-bar">
-      <img id="preview-thumb" src="" alt="预览">
-      <span id="preview-name"></span>
-      <span id="clear-image" onclick="clearImage()">✕ 移除</span>
-    </div>
-
-    <div class="input-area">
-      <label class="upload-btn" id="upload-label" title="上传图片">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="18" height="18" rx="3"/>
-          <circle cx="8.5" cy="8.5" r="1.5"/>
-          <polyline points="21 15 16 10 5 21"/>
-        </svg>
-        <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
-      </label>
-      <input type="text" id="userInput" placeholder="Ask me anything..." onkeypress="if(event.keyCode==13) sendMessage()">
-      <button class="send-btn" id="sendBtn" onclick="sendMessage()">SEND</button>
-    </div>
-  </div>
-</main>
-
 <script>
   const WORKER_URL = 'https://nvidia-bot-proxy.m961820394.workers.dev/';
 
@@ -148,29 +5,23 @@
   let pendingImage = null;
   let selectedModel = 'z-ai/glm-5.1';
 
-  // ── 模型切换 ──────────────────────────────────
   function selectModel(el, modelId) {
     document.querySelectorAll('.model-chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
     selectedModel = modelId;
-
-    // 切换模型时清空对话历史（不同模型上下文不通用）
     chatHistory = [];
     const chatBox = document.getElementById('chat-box');
     chatBox.innerHTML = `<div class="msg ai">已切换到 <strong>${el.textContent}</strong>，对话历史已重置。</div>`;
   }
 
-  // ── 图片处理 ──────────────────────────────────
   function handleImageSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
-
     if (file.size > 3 * 1024 * 1024) {
       alert('图片请不要超过 3MB。');
       event.target.value = '';
       return;
     }
-
     const reader = new FileReader();
     reader.onload = (e) => {
       pendingImage = e.target.result;
@@ -178,7 +29,6 @@
       document.getElementById('preview-name').textContent = file.name;
       document.getElementById('image-preview-bar').style.display = 'flex';
       document.getElementById('upload-label').classList.add('has-image');
-      // 显示 vision badge
       document.getElementById('vision-badge').classList.add('show');
     };
     reader.readAsDataURL(file);
@@ -192,85 +42,106 @@
     document.getElementById('vision-badge').classList.remove('show');
   }
 
-  // ── 发送消息 ──────────────────────────────────
-async function sendMessage() {
-  const input = document.getElementById('userInput');
-  const text = input.value.trim();
-  if (!text && !pendingImage) return;
-
-  const sendBtn = document.getElementById('sendBtn');
-  sendBtn.disabled = true;
-  sendBtn.textContent = '...';
-
-  appendUserMessage(text, pendingImage);
-  input.value = '';
-
-  const userContent = text || '请描述这张图片';
-  chatHistory.push({ role: "user", content: userContent });
-
-  const requestBody = { messages: chatHistory, model: selectedModel };
-  if (pendingImage) requestBody.image = pendingImage;
-  clearImage();
-
-  // 先创建一个空的 AI 气泡
-  const aiDiv = createAiBubble();
-
-  try {
-    const response = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
-    });
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let fullReply = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
-
-      for (const line of lines) {
-        const jsonStr = line.slice(6).trim();
-        if (jsonStr === '[DONE]') break;
-        try {
-          const parsed = JSON.parse(jsonStr);
-          const delta = parsed.choices?.[0]?.delta?.content;
-          if (delta) {
-            fullReply += delta;
-            aiDiv.innerText = fullReply; // 逐字更新气泡
-            document.getElementById('chat-box').scrollTo({ 
-              top: document.getElementById('chat-box').scrollHeight, 
-              behavior: 'smooth' 
-            });
-          }
-        } catch {}
-      }
-    }
-
-    chatHistory.push({ role: "assistant", content: fullReply });
-
-  } catch (e) {
-    aiDiv.innerText = '网络异常：无法连接到 Worker。';
-  } finally {
-    sendBtn.disabled = false;
-    sendBtn.textContent = 'SEND';
+  function createAiBubble() {
+    const chatBox = document.getElementById('chat-box');
+    const div = document.createElement('div');
+    div.className = 'msg ai';
+    div.innerText = '▍';
+    chatBox.appendChild(div);
+    chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+    return div;
   }
-}
 
-// 新增：创建空气泡并返回引用
-function createAiBubble() {
-  const chatBox = document.getElementById('chat-box');
-  const div = document.createElement('div');
-  div.className = 'msg ai';
-  div.innerText = '▍'; // 光标占位
-  chatBox.appendChild(div);
-  chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
-  return div;
-}
+  function appendUserMessage(text, imageDataUrl) {
+    const chatBox = document.getElementById('chat-box');
+    const div = document.createElement('div');
+    div.className = 'msg user';
+    if (text) div.appendChild(document.createTextNode(text));
+    if (imageDataUrl) {
+      const img = document.createElement('img');
+      img.src = imageDataUrl;
+      div.appendChild(img);
+    }
+    chatBox.appendChild(div);
+    chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+  }
+
+  // ★ 核心：流式读取
+  async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const text = input.value.trim();
+    if (!text && !pendingImage) return;
+
+    const sendBtn = document.getElementById('sendBtn');
+    sendBtn.disabled = true;
+    sendBtn.textContent = '...';
+
+    appendUserMessage(text, pendingImage);
+    input.value = '';
+
+    const userContent = text || '请描述这张图片';
+    chatHistory.push({ role: "user", content: userContent });
+
+    const requestBody = { messages: chatHistory, model: selectedModel };
+    if (pendingImage) requestBody.image = pendingImage;
+    clearImage();
+
+    const aiDiv = createAiBubble();
+
+    try {
+      const response = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        // Worker 返回了错误 JSON
+        const err = await response.json();
+        aiDiv.innerText = '⚠ ' + (err.error || '未知错误');
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullReply = '';
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // 最后一行可能不完整，留到下次
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const delta = parsed.choices?.[0]?.delta?.content;
+            if (delta) {
+              fullReply += delta;
+              aiDiv.innerText = fullReply;
+              document.getElementById('chat-box').scrollTo({
+                top: document.getElementById('chat-box').scrollHeight,
+                behavior: 'smooth'
+              });
+            }
+          } catch {}
+        }
+      }
+
+      if (!fullReply) fullReply = '（无内容返回）';
+      chatHistory.push({ role: "assistant", content: fullReply });
+
+    } catch (e) {
+      aiDiv.innerText = '网络异常：无法连接到 Worker。';
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'SEND';
+    }
+  }
 </script>
-</body>
-</html>
